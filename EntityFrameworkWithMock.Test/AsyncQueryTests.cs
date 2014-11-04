@@ -12,7 +12,7 @@ namespace EntityFrameworkWithMock.Test
     public class AsyncQueryTests
     {
         [TestMethod]
-        public void SameBehaviourForTwoUsagesOfToList()
+        public async Task SameBehaviourForTwoUsagesOfToListAsync()
         {
             var data = new List<Blog> 
             { 
@@ -24,7 +24,7 @@ namespace EntityFrameworkWithMock.Test
             var mockSet = new Mock<DbSet<Blog>>();
             mockSet.As<IDbAsyncEnumerable<Blog>>()
                 .Setup(m => m.GetAsyncEnumerator())
-                .Returns(new TestDbAsyncEnumerator<Blog>(() => data.GetEnumerator()));
+                .Returns(() => new TestDbAsyncEnumerator<Blog>(data.GetEnumerator()));
 
             mockSet.As<IQueryable<Blog>>()
                 .Setup(m => m.Provider)
@@ -32,13 +32,13 @@ namespace EntityFrameworkWithMock.Test
 
             mockSet.As<IQueryable<Blog>>().Setup(m => m.Expression).Returns(data.Expression);
             mockSet.As<IQueryable<Blog>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mockSet.As<IQueryable<Blog>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
+            mockSet.As<IQueryable<Blog>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator);
 
             var mockContext = new Mock<BloggingContext>();
             mockContext.Setup(c => c.Blogs).Returns(mockSet.Object);
 
-            var list = mockContext.Object.Blogs.ToList();
-            var list2 = mockContext.Object.Blogs.ToList();
+            var list = await mockContext.Object.Blogs.ToListAsync();
+            var list2 = await mockContext.Object.Blogs.ToListAsync();
 
             Assert.AreEqual(list.Count, list2.Count);
         }
@@ -57,7 +57,7 @@ namespace EntityFrameworkWithMock.Test
             var mockSet = new Mock<DbSet<Blog>>();
             mockSet.As<IDbAsyncEnumerable<Blog>>()
                 .Setup(m => m.GetAsyncEnumerator())
-                .Returns(new TestDbAsyncEnumerator<Blog>(() => data.GetEnumerator()));
+                .Returns(() => new TestDbAsyncEnumerator<Blog>(data.GetEnumerator()));
 
             mockSet.As<IQueryable<Blog>>()
                 .Setup(m => m.Provider)
@@ -65,7 +65,7 @@ namespace EntityFrameworkWithMock.Test
 
             mockSet.As<IQueryable<Blog>>().Setup(m => m.Expression).Returns(data.Expression);
             mockSet.As<IQueryable<Blog>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mockSet.As<IQueryable<Blog>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
+            mockSet.As<IQueryable<Blog>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator);
 
             var mockContext = new Mock<BloggingContext>();
             mockContext.Setup(c => c.Blogs).Returns(mockSet.Object);
